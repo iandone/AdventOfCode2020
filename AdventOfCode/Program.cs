@@ -8,8 +8,9 @@ namespace AdventOfCode
     class Program
     {
         public static int MaxNumberOfDigits = 4; // 2020.Length
+        public static int MinNumberOfDigits = 2; // based on the input file
 
-        static void Main(string[] args)
+        static void Main()
         {
             Console.WriteLine("Hello World! This is Li's Advent of Code console application");
 
@@ -23,19 +24,23 @@ namespace AdventOfCode
 
                 for (int j = 0; j < input.Count() && j != i; j++)
                 {
-                    int b = int.Parse(input.ElementAt(j));
-
-                    for (int k = 0; k < input.Count() && k != i && k != j; k++)
+                    if (input.ElementAt(j).Length <= MaxNumberOfDigits - input.ElementAt(i).Length + MinNumberOfDigits)
                     {
-                        if (input.ElementAt(k).Length <= MaxNumberOfDigits - (a + b).ToString().Length + 3)
+                        int b = int.Parse(input.ElementAt(j));
+
+                        for (int k = 0; k < input.Count() && k != i && k != j; k++)
                         {
-                            int c = int.Parse(input.ElementAt(k));
-
-                            comparison++;
-
-                            if (a + b + c == 2020)
+                            if (input.ElementAt(k).Length <= MaxNumberOfDigits - (a + b).ToString().Length + MinNumberOfDigits + 1)
                             {
-                                Console.WriteLine($"We found combination {a} + {b} + {c} = 2020, multiplied {a * b * c}, after {comparison} comparisons");
+                                int c = int.Parse(input.ElementAt(k));
+
+                                comparison++;
+
+                                if (a + b + c == 2020)
+                                {
+                                    Console.WriteLine(
+                                        $"We found combination {a} + {b} + {c} = 2020, multiplied {a * b * c}, after {comparison} comparisons");
+                                }
                             }
                         }
                     }
