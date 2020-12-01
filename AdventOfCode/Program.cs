@@ -6,7 +6,7 @@ namespace AdventOfCode
 {
     class Program
     {
-        public static int MaxNumberOfDigits = 4;
+        public static int MaxNumberOfDigits = 4; // 2020
 
         static void Main(string[] args)
         {
@@ -19,20 +19,26 @@ namespace AdventOfCode
             int comparisonCount = 0;
 
             for (int i = 0; i < list.Count(); i++)
-            { 
+            {
                 int a = int.Parse(list.ElementAt(i));
 
                 for (int j = 0; j < list.Count() && j != i; j++)
                 {
-                    if (list.ElementAt(j).Length <= MaxNumberOfDigits - list.ElementAt(i).Length + 3)
+                    int b = int.Parse(list.ElementAt(j));
+
+                    for (int k = 0; k < list.Count() && k != i && k != j; k++)
                     {
-                        int b = int.Parse(list.ElementAt(j));
-
-                        comparisonCount++;
-
-                        if (a + b == 2020)
+                        if (list.ElementAt(k).Length <= MaxNumberOfDigits - (a + b).ToString().Length + 3)
                         {
-                            Console.WriteLine($"We found pair {a} + {b} = 2020, multiplied {a * b}, after {comparisonCount} comparisons");
+                            int c = int.Parse(list.ElementAt(k));
+
+                            comparisonCount++;
+
+                            if (a + b + c == 2020)
+                            {
+                                Console.WriteLine(
+                                    $"We found combination {a} + {b} + {c} = 2020, multiplied {a * b * c}, after {comparisonCount} comparisons");
+                            }
                         }
                     }
                 }
