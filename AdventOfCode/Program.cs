@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -6,43 +7,50 @@ namespace AdventOfCode
 {
     class Program
     {
-        public static int MaxNumberOfDigits = 4; // 2020
+        public static int MaxNumberOfDigits = 4; // 2020.Length
+        public static int MinNumberOfDigits = 2; // based on the input file
 
-        static void Main(string[] args)
+        static void Main()
         {
-            Console.WriteLine("Hello World! This is Alina's Advent of Code console application");
+            Console.WriteLine("Hello World! This is Li's Advent of Code console application");
 
-            string input = File.ReadAllText("input.txt");
+            var input = LoadInput();
 
-            var list = input.Split(null).Where(x => !string.IsNullOrEmpty(x));
+            int comparison = 0;
 
-            int comparisonCount = 0;
-
-            for (int i = 0; i < list.Count(); i++)
+            for (int i = 0; i < input.Count(); i++)
             {
-                int a = int.Parse(list.ElementAt(i));
+                int a = int.Parse(input.ElementAt(i));
 
-                for (int j = 0; j < list.Count() && j != i; j++)
+                for (int j = 0; j < input.Count() && j != i; j++)
                 {
-                    int b = int.Parse(list.ElementAt(j));
-
-                    for (int k = 0; k < list.Count() && k != i && k != j; k++)
+                    if (input.ElementAt(j).Length <= MaxNumberOfDigits - input.ElementAt(i).Length + MinNumberOfDigits)
                     {
-                        if (list.ElementAt(k).Length <= MaxNumberOfDigits - (a + b).ToString().Length + 3)
+                        int b = int.Parse(input.ElementAt(j));
+
+                        for (int k = 0; k < input.Count() && k != i && k != j; k++)
                         {
-                            int c = int.Parse(list.ElementAt(k));
-
-                            comparisonCount++;
-
-                            if (a + b + c == 2020)
+                            if (input.ElementAt(k).Length <= MaxNumberOfDigits - (a + b).ToString().Length + MinNumberOfDigits + 1)
                             {
-                                Console.WriteLine(
-                                    $"We found combination {a} + {b} + {c} = 2020, multiplied {a * b * c}, after {comparisonCount} comparisons");
+                                int c = int.Parse(input.ElementAt(k));
+
+                                comparison++;
+
+                                if (a + b + c == 2020)
+                                {
+                                    Console.WriteLine(
+                                        $"We found combination {a} + {b} + {c} = 2020, multiplied {a * b * c}, after {comparison} comparisons");
+                                }
                             }
                         }
                     }
                 }
             }
+        }
+
+        private static IEnumerable<string> LoadInput()
+        {
+            return File.ReadAllText("input.txt").Split(null).Where(x => !string.IsNullOrEmpty(x));
         }
     }
 }
