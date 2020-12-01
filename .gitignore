@@ -1,0 +1,22 @@
+## VS artifacts
+*.user
+*.ncb
+*.suo
+Settings.StyleCop
+StyleCop.Cache
+*.cache
+src/_NCrunch_RapptrAll/*
+*ReSharper*
+*/Properties/VersionInfo.cs
+src/CommonAssemblyInfo.cs
+.vs/
+.idea/
+
+## MS Build artifacts
+obj
+bin
+build/*
+lib/*/*
+artifacts/*
+src/FundApps.Rapptr.Api/publish/*
+src/FundApps.Rapptr.Web/publish/*
