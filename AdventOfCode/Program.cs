@@ -12,7 +12,7 @@ namespace AdventOfCode
 
         static void Main()
         {
-            Console.WriteLine("Hello World! This is Li's Advent of Code console application");
+            Console.WriteLine("Hello World! This is Li's Advent of Code console app");
 
             var input = LoadInput();
 
@@ -20,26 +20,26 @@ namespace AdventOfCode
 
             for (int i = 0; i < input.Count(); i++)
             {
-                int a = int.Parse(input.ElementAt(i));
+                int a = input.ElementAt(i);
 
                 for (int j = 0; j < input.Count() && j != i; j++)
                 {
-                    if (input.ElementAt(j).Length <= MaxNumberOfDigits - input.ElementAt(i).Length + MinNumberOfDigits)
+                    if (GetNumberOfDigits(input.ElementAt(j)) <= MaxNumberOfDigits - GetNumberOfDigits(input.ElementAt(i)) + MinNumberOfDigits)
                     {
-                        int b = int.Parse(input.ElementAt(j));
+                        int b = input.ElementAt(j);
 
                         for (int k = 0; k < input.Count() && k != i && k != j; k++)
                         {
-                            if (input.ElementAt(k).Length <= MaxNumberOfDigits - (a + b).ToString().Length + MinNumberOfDigits + 1)
+                            if (GetNumberOfDigits(input.ElementAt(k)) <= MaxNumberOfDigits - GetNumberOfDigits(a + b) + MinNumberOfDigits + 1)
                             {
-                                int c = int.Parse(input.ElementAt(k));
+                                int c = input.ElementAt(k);
 
                                 comparison++;
 
                                 if (a + b + c == 2020)
                                 {
                                     Console.WriteLine(
-                                        $"We found combination {a} + {b} + {c} = 2020, multiplied {a * b * c}, after {comparison} comparisons");
+                                        $"The result is combination {a} + {b} + {c} = 2020, multiplied {a * b * c}, after {comparison} comparisons");
                                 }
                             }
                         }
@@ -48,9 +48,11 @@ namespace AdventOfCode
             }
         }
 
-        private static IEnumerable<string> LoadInput()
+        private static double GetNumberOfDigits(int number) => Math.Floor(Math.Log10(number) + 1);
+
+        private static IEnumerable<int> LoadInput()
         {
-            return File.ReadAllText("input.txt").Split(null).Where(x => !string.IsNullOrEmpty(x));
+            return File.ReadAllLines("input.txt").Select(x => int.Parse(x));
         }
     }
 }
