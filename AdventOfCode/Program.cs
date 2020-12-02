@@ -12,9 +12,7 @@ namespace AdventOfCode
         {
             Console.WriteLine("Hello World! This is Li's Advent of Code console app");
 
-            int validPasswordCount = LoadInput().Sum(rule => rule.IsValid() ? 1 : 0);
-
-            Console.WriteLine("Valid Password Count = "+validPasswordCount);
+            Console.WriteLine($"Valid Password Count = {LoadInput().Sum(rule => rule.IsValid() ? 1 : 0)}");
         }
 
         class Input
@@ -22,23 +20,23 @@ namespace AdventOfCode
             private readonly string _rule;
             private readonly string _password;
 
-            private int LastCharIndex => _rule.Length - 1;
-
-            private IEnumerable<int> Limits => Regex.Split(_rule, "\\D+").Where(limit => !string.IsNullOrEmpty(limit)).Select(limit => int.Parse(limit));
-
             public Input(string rule, string password)
             {
                 _rule = rule;
                 _password = password;
             }
 
+            private int LastChar => _rule[^1];
+
+            private IEnumerable<int> Limits => Regex.Split(_rule, "\\D+").Where(limit => !string.IsNullOrEmpty(limit)).Select(limit => int.Parse(limit));
+
+            private bool CompareToLastChar(int pos) => _password.ToCharArray()[pos] == LastChar;
+
             public bool IsValid()
             {
-                char character = _rule[LastCharIndex];
+                int frequency = Limits.Sum(l => CompareToLastChar(l) ? 1 : 0);
 
-                int frequency = _password.ToCharArray().Count(c => c == character);
-
-                return frequency >= Limits.Min() && frequency <= Limits.Max();
+                return frequency == 1;
             }
         }
 
