@@ -2,57 +2,49 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace AdventOfCode
 {
     class Program
     {
-        public static int MaxNumberOfDigits = 4; // 2020.Length
-        public static int MinNumberOfDigits = 2; // based on the input file
-
         static void Main()
         {
             Console.WriteLine("Hello World! This is Li's Advent of Code console app");
 
-            var input = LoadInput();
+            int validPasswordCount = LoadInput().Sum(rule => rule.IsValid() ? 1 : 0);
 
-            int comparison = 0;
+            Console.WriteLine("Valid Password Count = "+validPasswordCount);
+        }
 
-            for (int i = 0; i < input.Count(); i++)
+        class Input
+        {
+            private readonly string _rule;
+            private readonly string _password;
+
+            private int LastCharIndex => _rule.Length - 1;
+
+            private IEnumerable<int> Limits => Regex.Split(_rule, "\\D+").Where(limit => !string.IsNullOrEmpty(limit)).Select(limit => int.Parse(limit));
+
+            public Input(string rule, string password)
             {
-                int a = input.ElementAt(i);
+                _rule = rule;
+                _password = password;
+            }
 
-                for (int j = 0; j < input.Count() && j != i; j++)
-                {
-                    if (GetNumberOfDigits(input.ElementAt(j)) <= MaxNumberOfDigits - GetNumberOfDigits(input.ElementAt(i)) + MinNumberOfDigits)
-                    {
-                        int b = input.ElementAt(j);
+            public bool IsValid()
+            {
+                char character = _rule[LastCharIndex];
 
-                        for (int k = 0; k < input.Count() && k != i && k != j; k++)
-                        {
-                            if (GetNumberOfDigits(input.ElementAt(k)) <= MaxNumberOfDigits - GetNumberOfDigits(a + b) + MinNumberOfDigits + 1)
-                            {
-                                int c = input.ElementAt(k);
+                int frequency = _password.ToCharArray().Count(c => c == character);
 
-                                comparison++;
-
-                                if (a + b + c == 2020)
-                                {
-                                    Console.WriteLine(
-                                        $"The result is combination {a} + {b} + {c} = 2020, multiplied {a * b * c}, after {comparison} comparisons");
-                                }
-                            }
-                        }
-                    }
-                }
+                return frequency >= Limits.Min() && frequency <= Limits.Max();
             }
         }
 
-        private static double GetNumberOfDigits(int number) => Math.Floor(Math.Log10(number) + 1);
-
-        private static IEnumerable<int> LoadInput()
+        private static IEnumerable<Input> LoadInput()
         {
-            return File.ReadAllLines("input.txt").Select(x => int.Parse(x));
+            return File.ReadAllLines("input-day2.txt").Select(s => new Input(rule: s.Split(":")[0], password: s.Split(":")[1]));
         }
     }
 }
