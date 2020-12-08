@@ -8,16 +8,16 @@ namespace AdventOfCode
 {
     class Program
     {
-        private static int _accumulator = 0;
+        private static long _accumulator;
         private static IList<Instruction> _instructions = LoadInstructions();
 
         static void Main()
         {
-            Execute();
-            
             Console.WriteLine("Hello World! This is Li's Advent of Code console app");
 
-            Console.WriteLine($"P1 = {_accumulator}");
+            FixInfiniteLoop();
+
+            Console.WriteLine($"P2 = {(CanExecuteInFull() ? _accumulator : 0)}");
         }
 
         private static IList<Instruction> LoadInstructions()
@@ -25,7 +25,32 @@ namespace AdventOfCode
             return File.ReadAllLines("input.txt").Select(i => new Instruction(i)).ToList();
         }
 
-        public static void Execute()
+        public static bool CanExecuteInFull()
+        {
+            _accumulator = 0;
+            int iterations = 0;
+            int index = 0;
+
+            while (index < _instructions.Count && iterations++ < _instructions.Count * 2)
+            {
+                var currentInstruction = _instructions.ElementAt(index);
+
+                switch (currentInstruction.Move)
+                {
+                    case "acc":
+                        _accumulator += currentInstruction.Step;
+                        break;
+                    case "jmp":
+                        index += currentInstruction.Step - 1;
+                        break;
+                }
+                index++;
+            }
+
+            return index == _instructions.Count;
+        }
+
+        public static void FixInfiniteLoop()
         {
             int index = 0;
 
@@ -33,41 +58,48 @@ namespace AdventOfCode
             {
                 var currentInstruction = _instructions.ElementAt(index);
 
-                if (currentInstruction.HasRun)
+                if (new[] { "nop", "jmp" }.Contains(currentInstruction.Move))
                 {
-                    break;
-                }
+                    _instructions.ElementAt(index).Switch();
 
-                switch (currentInstruction.Move)
-                {
-                    case "nop":
-                        index++;
+                    if (CanExecuteInFull())
+                    {
                         break;
-                    case "acc":
-                        _accumulator += currentInstruction.Step;
-                        index++;
-                        break;
-                    case "jmp":
-                        index += currentInstruction.Step;
-                        break;
+                    }
+                    else
+                    {
+                        _instructions.ElementAt(index).Switch();
+                    }
                 }
-
-                currentInstruction.HasRun = true;
+                index++;
             }
         }
 
         public class Instruction
         {
-            public string Move { get; }
+            public string Move { get; private set; }
             public int Step { get; }
-            public bool HasRun { get; set; }
+            public int NumberOfTimes { get; set; } = 0;
 
-        
             public Instruction(string instruction)
             {
-                Move = instruction.Split(" ")[0];
+                Move = new Regex("[^\\s]+").Match(instruction).Value;
                 Step = int.Parse(new Regex("-?\\d+").Match(instruction).Value);
-                HasRun = false;
+            }
+
+            public void Switch()
+            {
+                switch (Move)
+                {
+                    case "nop":
+                        Move = "jmp";
+                        break;
+                    case "jmp":
+                        Move = "nop";
+                        break;
+                    default: 
+                        break;
+                }
             }
         }
     }
