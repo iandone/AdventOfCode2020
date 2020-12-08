@@ -75,8 +75,7 @@ namespace AdventOfCode
         {
             public string Move { get; private set; }
             public int Step { get; }
-            public int NumberOfTimes { get; set; } = 0;
-
+           
             public Instruction(string instruction)
             {
                 Move = new Regex("[^\\s]+").Match(instruction).Value;
