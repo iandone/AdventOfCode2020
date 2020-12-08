@@ -8,7 +8,6 @@ namespace AdventOfCode
 {
     class Program
     {
-        private static long _accumulator;
         private static IList<Instruction> _instructions = LoadInstructions();
 
         static void Main()
@@ -17,7 +16,7 @@ namespace AdventOfCode
 
             FixInfiniteLoop();
 
-            Console.WriteLine($"P2 = {(CanExecuteInFull() ? _accumulator : 0)}");
+            Console.WriteLine($"P2 = {Execute()}");
         }
 
         private static IList<Instruction> LoadInstructions()
@@ -25,9 +24,9 @@ namespace AdventOfCode
             return File.ReadAllLines("input.txt").Select(i => new Instruction(i)).ToList();
         }
 
-        public static bool CanExecuteInFull()
+        public static int Execute()
         {
-            _accumulator = 0;
+            int accumulator = 0;
             int iterations = 0;
             int index = 0;
 
@@ -38,7 +37,7 @@ namespace AdventOfCode
                 switch (currentInstruction.Move)
                 {
                     case "acc":
-                        _accumulator += currentInstruction.Step;
+                        accumulator += currentInstruction.Step;
                         break;
                     case "jmp":
                         index += currentInstruction.Step - 1;
@@ -47,7 +46,7 @@ namespace AdventOfCode
                 index++;
             }
 
-            return index == _instructions.Count;
+            return index == _instructions.Count ? accumulator : 0;
         }
 
         public static void FixInfiniteLoop()
@@ -62,7 +61,7 @@ namespace AdventOfCode
                 {
                     _instructions.ElementAt(index).Switch();
 
-                    if (CanExecuteInFull())
+                    if (Execute() > 0)
                     {
                         break;
                     }
