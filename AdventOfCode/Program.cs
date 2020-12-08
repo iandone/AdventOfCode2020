@@ -2,58 +2,104 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace AdventOfCode
 {
     class Program
     {
+        private static long _accumulator;
+        private static IList<Instruction> _instructions = LoadInstructions();
+
         static void Main()
         {
             Console.WriteLine("Hello World! This is Li's Advent of Code console app");
 
-            var groups = LoadGroups();
+            FixInfiniteLoop();
 
-            Console.WriteLine($"P1 = {groups.Sum(g => g.NumberOfQuestionsAnswered())}");
-            Console.WriteLine($"P2 = {groups.Sum(g => g.NumberOfQuestionsAnsweredByAll())}");
+            Console.WriteLine($"P2 = {(CanExecuteInFull() ? _accumulator : 0)}");
         }
 
-        private static IList<Group> LoadGroups()
+        private static IList<Instruction> LoadInstructions()
         {
-            return File.ReadAllText("input.txt").Split("\n\n").Select(g => new Group(g)).ToList();
+            return File.ReadAllLines("input.txt").Select(i => new Instruction(i)).ToList();
         }
 
-        public class Group
+        public static bool CanExecuteInFull()
         {
-            private readonly List<HashSet<char>> _answers;
-            private readonly HashSet<char> _combinedAnswers;
+            _accumulator = 0;
+            int iterations = 0;
+            int index = 0;
 
-        
-            public Group(string group)
+            while (index < _instructions.Count && iterations++ < _instructions.Count * 2)
             {
-                _answers = group.Split("\n").Select(a => a.ToCharArray().ToHashSet()).ToList();
-                _combinedAnswers = _answers.SelectMany(answer => answer).ToHashSet();
+                var currentInstruction = _instructions.ElementAt(index);
+
+                switch (currentInstruction.Move)
+                {
+                    case "acc":
+                        _accumulator += currentInstruction.Step;
+                        break;
+                    case "jmp":
+                        index += currentInstruction.Step - 1;
+                        break;
+                }
+                index++;
             }
 
-            public int NumberOfQuestionsAnsweredByAll()
-            {
-                if (_answers.Count == 1)
-                {
-                    return _answers.Single().Count;
-                }
+            return index == _instructions.Count;
+        }
 
-                return _combinedAnswers
-                    .ToDictionary(key => key, val => _answers.Sum(answer => answer.Count(c => c == val)))
-                    .Count(a => a.Value == _answers.Count);
+        public static void FixInfiniteLoop()
+        {
+            int index = 0;
+
+            while (index < _instructions.Count)
+            {
+                var currentInstruction = _instructions.ElementAt(index);
+
+                if (new[] { "nop", "jmp" }.Contains(currentInstruction.Move))
+                {
+                    _instructions.ElementAt(index).Switch();
+
+                    if (CanExecuteInFull())
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        _instructions.ElementAt(index).Switch();
+                    }
+                }
+                index++;
+            }
+        }
+
+        public class Instruction
+        {
+            public string Move { get; private set; }
+            public int Step { get; }
+            public int NumberOfTimes { get; set; } = 0;
+
+            public Instruction(string instruction)
+            {
+                Move = new Regex("[^\\s]+").Match(instruction).Value;
+                Step = int.Parse(new Regex("-?\\d+").Match(instruction).Value);
             }
 
-            public int NumberOfQuestionsAnswered()
+            public void Switch()
             {
-                if (_answers.Count == 1)
+                switch (Move)
                 {
-                    return _answers.Single().Count;
+                    case "nop":
+                        Move = "jmp";
+                        break;
+                    case "jmp":
+                        Move = "nop";
+                        break;
+                    default: 
+                        break;
                 }
-                
-                return _combinedAnswers.ToHashSet().Count;
             }
         }
     }
