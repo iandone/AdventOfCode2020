@@ -2,58 +2,72 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace AdventOfCode
 {
     class Program
     {
+        private static int _accumulator = 0;
+        private static IList<Instruction> _instructions = LoadInstructions();
+
         static void Main()
         {
+            Execute();
+            
             Console.WriteLine("Hello World! This is Li's Advent of Code console app");
 
-            var groups = LoadGroups();
-
-            Console.WriteLine($"P1 = {groups.Sum(g => g.NumberOfQuestionsAnswered())}");
-            Console.WriteLine($"P2 = {groups.Sum(g => g.NumberOfQuestionsAnsweredByAll())}");
+            Console.WriteLine($"P1 = {_accumulator}");
         }
 
-        private static IList<Group> LoadGroups()
+        private static IList<Instruction> LoadInstructions()
         {
-            return File.ReadAllText("input.txt").Split("\n\n").Select(g => new Group(g)).ToList();
+            return File.ReadAllLines("input.txt").Select(i => new Instruction(i)).ToList();
         }
 
-        public class Group
+        public static void Execute()
         {
-            private readonly List<HashSet<char>> _answers;
-            private readonly HashSet<char> _combinedAnswers;
+            int index = 0;
+
+            while (index < _instructions.Count)
+            {
+                var currentInstruction = _instructions.ElementAt(index);
+
+                if (currentInstruction.HasRun)
+                {
+                    break;
+                }
+
+                switch (currentInstruction.Move)
+                {
+                    case "nop":
+                        index++;
+                        break;
+                    case "acc":
+                        _accumulator += currentInstruction.Step;
+                        index++;
+                        break;
+                    case "jmp":
+                        index += currentInstruction.Step;
+                        break;
+                }
+
+                currentInstruction.HasRun = true;
+            }
+        }
+
+        public class Instruction
+        {
+            public string Move { get; }
+            public int Step { get; }
+            public bool HasRun { get; set; }
 
         
-            public Group(string group)
+            public Instruction(string instruction)
             {
-                _answers = group.Split("\n").Select(a => a.ToCharArray().ToHashSet()).ToList();
-                _combinedAnswers = _answers.SelectMany(answer => answer).ToHashSet();
-            }
-
-            public int NumberOfQuestionsAnsweredByAll()
-            {
-                if (_answers.Count == 1)
-                {
-                    return _answers.Single().Count;
-                }
-
-                return _combinedAnswers
-                    .ToDictionary(key => key, val => _answers.Sum(answer => answer.Count(c => c == val)))
-                    .Count(a => a.Value == _answers.Count);
-            }
-
-            public int NumberOfQuestionsAnswered()
-            {
-                if (_answers.Count == 1)
-                {
-                    return _answers.Single().Count;
-                }
-                
-                return _combinedAnswers.ToHashSet().Count;
+                Move = instruction.Split(" ")[0];
+                Step = int.Parse(new Regex("-?\\d+").Match(instruction).Value);
+                HasRun = false;
             }
         }
     }
