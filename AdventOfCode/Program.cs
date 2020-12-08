@@ -51,15 +51,13 @@ namespace AdventOfCode
 
         public static void FixInfiniteLoop()
         {
-            int index = 0;
-
-            while (index < _instructions.Count)
+            foreach (var instruction in _instructions)
             {
-                var currentInstruction = _instructions.ElementAt(index);
+                var currentInstruction = instruction;
 
-                if (new[] { "nop", "jmp" }.Contains(currentInstruction.Move))
+                if (new[] {"nop", "jmp"}.Contains(currentInstruction.Move))
                 {
-                    _instructions.ElementAt(index).Switch();
+                    instruction.Switch();
 
                     if (Execute() > 0)
                     {
@@ -67,10 +65,9 @@ namespace AdventOfCode
                     }
                     else
                     {
-                        _instructions.ElementAt(index).Switch();
+                        instruction.Switch();
                     }
                 }
-                index++;
             }
         }
 
