@@ -1,101 +1,80 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace AdventOfCode
 {
     class Program
     {
-        private static IList<Instruction> _instructions = LoadInstructions();
+        private static readonly int _preamble = 25;
+        private static long[] _input;
+        private static long[] _checklist;
 
         static void Main()
         {
+            Load();
+
+            long p1Result = FindWeakness();
+            Console.WriteLine($"P1 = ({(p1Result > 0 ? p1Result.ToString() : "No such number found")})"); // 36845998
+
+            long p2Result = FindEncryptionWeakness(p1Result);
+            Console.WriteLine($"P2 = ({p2Result})"); // 4830226
+        }
+
+        private static long FindWeakness()
+        {
+            for (int i = 0; i < _checklist.Length; i++)
+            {
+                if (!IsSumOfTwoElements(_checklist[i], _input[i..(i + _preamble)]))
+                {
+                    return _checklist[i];
+                }
+            }
+
+            return -1;
+        }
+
+        private static bool IsSumOfTwoElements(long number, long[] range)
+        {
+            for (int i = 0; i < range.Length; i++)
+            {
+                for (int j = 0; j < range.Length && i != j; j++)
+                {
+                    if (number == range[i] + range[j])
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static long FindEncryptionWeakness(long number)
+        {
+            for (int i = 0; i < _checklist.Length; i++)
+            {
+                int j = i;
+
+                while (_checklist[i..j].Sum() < number && j < _checklist.Length)
+                {
+                    j++;
+                }
+
+                if (_checklist[i..j].Sum() == number)
+                {
+                    return _checklist[i..j].Min() + _checklist[i..j].Max();
+                }
+            }
+
+            return -1;
+        }
+
+        private static void Load()
+        {
             Console.WriteLine("Hello World! This is Li's Advent of Code console app");
-
-            FixInfiniteLoop();
-
-            Console.WriteLine($"P2 = {Execute()}");
-        }
-
-        private static IList<Instruction> LoadInstructions()
-        {
-            return File.ReadAllLines("input.txt").Select(i => new Instruction(i)).ToList();
-        }
-
-        public static int Execute()
-        {
-            int accumulator = 0;
-            int iterations = 0;
-            int index = 0;
-
-            while (index < _instructions.Count && iterations++ < _instructions.Count * 2)
-            {
-                var currentInstruction = _instructions.ElementAt(index);
-
-                switch (currentInstruction.Move)
-                {
-                    case "acc":
-                        accumulator += currentInstruction.Step;
-                        break;
-                    case "jmp":
-                        index += currentInstruction.Step - 1;
-                        break;
-                }
-                index++;
-            }
-
-            return index == _instructions.Count ? accumulator : 0;
-        }
-
-        public static void FixInfiniteLoop()
-        {
-            foreach (var instruction in _instructions)
-            {
-                var currentInstruction = instruction;
-
-                if (new[] {"nop", "jmp"}.Contains(currentInstruction.Move))
-                {
-                    instruction.Switch();
-
-                    if (Execute() > 0)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        instruction.Switch();
-                    }
-                }
-            }
-        }
-
-        public class Instruction
-        {
-            public string Move { get; private set; }
-            public int Step { get; }
-           
-            public Instruction(string instruction)
-            {
-                Move = new Regex("[^\\s]+").Match(instruction).Value;
-                Step = int.Parse(new Regex("-?\\d+").Match(instruction).Value);
-            }
-
-            public void Switch()
-            {
-                switch (Move)
-                {
-                    case "nop":
-                        Move = "jmp";
-                        break;
-                    case "jmp":
-                        Move = "nop";
-                        break;
-                    default: 
-                        break;
-                }
-            }
+            _input = File.ReadAllLines("input.txt").Select(num => long.Parse(num)).ToArray();
+            _checklist = _input[_preamble..];
         }
     }
 }
